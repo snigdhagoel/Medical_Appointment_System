@@ -1,0 +1,3 @@
+insurance1 40
+insurance2 60
+insurance3 10

@@ -1,0 +1,80 @@
+Name: Snigdha Goel
+Student ID: 8859713515
+
+Work done:
+The source code was created extending the code available in Beej's Networking Guide. The three phases as described in the project description document were implemented. The project involved extensive use of socket creation, sending and receiving messages across the TCP and UDP sockets, and elaborate string handling. I tried to re-use the exisitng data structures and limit the usage of memory wherever possible - for example, I re-used the 'buf' character array to send messages and to receive incoming messages across sockets.
+
+Code Files:
+
+1.) healthcenterserver.c
+This file is used to implement the functionality of the Health Center Server. It receives authentication request from a patient and validates the received username and password. On successful verification, it sends success to the patient and on receiving request for available time slots, it sends available time slots for doctors' visit to the patient. On receiving a particular slot from the patient, it sends across the doctor name and the port on which that doctor can be contacted.
+
+2.) patient1.c
+This file represents the first patient. The patient sends an authentication request to the Health Center Server in the form of username and password. On receiving a success from the server, it requests the server for available time slots. On receipt of the available slots, it prompts the user to select one slot and checks whether that slot is one of the displayed slots. It then sends that selection to the server. On receipt of the doc name and port, it creates a UDP socket and asks the doctor for a cost estimation for his insurance_type.
+
+3.) patient2.c
+This file represents the second patient and has the same functionality as patient1 - the only difference being that it reads his credentials from patient2.txt and his insurance details from patient2insurance.txt.
+
+4.) doctor1.c
+This file represents the first doctor. When the patient contacts the doctor over a UDP socket with his insurance_type, the doctor checks how much he charges for that particular insurance_type (this information is read by the doctor program from doc1.txt on being started). He sends this cost estimation back to the patient.
+
+5.) doctor2.c
+This file represents the second doctor. It implements the same functionality as doctor1 - the only difference being that it reads doc2.txt to load his cost estimations.
+
+6.) makefile
+This file is used to compile the source files and to clean the compiled code if needed.
+
+7.) txt files:
+	patient1.txt - username and password of patient1
+	patient2.txt - username and password of patient2
+	users.txt - usernames and passwords of existing patients in the system
+	availabilities.txt - contains the available time slots and the corresponding doc name and port
+	patient1insurance.txt - holds the insurance details of patient1
+	patient2insurance.txt - holds the insurance details of patient2
+	doc1.txt - holds the cost estimations for doctor1 for all insurance types
+	doc2.txt - holds the cost estimations for doctor2 for all insurance types
+
+Steps to be performed:
+
+1.) To compile the code execute 'make -f makefile'.
+
+2.) To recompile:
+make clean
+make -f makefile
+
+3.) The doctor ports in availabilities.txt need to be changed to 41515 and 42515 while testing. If however, the text files provided in the zip archive are used, then no change needs to be made.
+
+4.) Order of executing processes: healthcenterserver, doctor1, doctor2, patient1 and then patient2. The healthcenterserver, doctor1 and doctor2 can be in any order, just that they should be started before running patient1 or patient2.
+
+The formats of messages exchanged between the patients, Health Center Server and the doctors are:
+
+Phase 1:
+
+1.) Patient to Health Center Server: 'authenticate patient_name patient_password'
+2.) Health Center Server to Patient: 'success or failure'
+
+Phase 2:
+
+1.) Patient to Health Center Server: 'available'
+2.) Health Center Server to Patient: 'index_1 day_1 time_1\nindex_2 day_2 time_2\n' (The list of all available time slots at that moment are sent to the patient).
+3.) Patient to Health Center Server: 'selection choice'
+4.) Health Center Server to Patient: 'doc_name doc_port' - if the slot is available
+				     'notavailable' - if the slot is not available
+
+Phase 3:
+
+1.) Patient to Doctor: 'insurance_type' (This value can be insurance1, insurance2 or insurance3)
+2.) Doctor to Patient: 'cost' (This value is a number which represents the amount it will cost the patient with insurance insurance_type to go to that doctor).
+
+Idiosyncrasies:
+
+1.) It is assumed that there are only 2 patients in our system. The code will not work if the number of patients is increased. It will be able to support only 2 patients.
+
+2.) On similar lines, it is assumed that there are only 6 rows in the availabilities.txt file. The code will not be able to handle two digit number of rows in the availabilities.txt file. In fact, the code will only be able to support 6 entries.
+
+3.) Concurrency has not been included as part of the project - it would have required complex transaction handling. As a result, the 'notavailable' from Health Center Server to patient which is sent if the slot has been reserved by some other patient during the time it took the first patient to send a request, will not come in the picture. However, the code for the same has been included in the project. The present code can be extended to include concurrent child processes in which case the 'notavailable' will become relevant.
+
+Reused Code:
+
+The TCP and UDP socket creation code has been taken from the Beej's tutorial. It has also been marked in the comments in the relevant sections of the code. Also, the send and receive functions between the client and the server (for both TCP and UDP sockets) have also been taken from Beej's tutorial. For bidirectional UDP message exchange, the following site was referred:
+https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
